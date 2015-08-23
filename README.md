@@ -1,5 +1,5 @@
 ### Address Book UI
-* [AddressBookUI](https://github.com/0oneo/iOSTranslation/blob/master/AddressBookUI.md) 来 [Matt](http://nshipster.com/authors/mattt-thompson/) 的 [Address​Book​UI](http://nshipster.com/addressbookui/)
+* [AddressBookUI](https://github.com/0oneo/iOSTranslation/blob/master/NSHipster/AddressBookUI.md) 来 [Matt](http://nshipster.com/authors/mattt-thompson/) 的 [Address​Book​UI](http://nshipster.com/addressbookui/)
 
 ### Core Animation
 
