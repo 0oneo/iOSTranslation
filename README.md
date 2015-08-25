@@ -1,6 +1,6 @@
 ### Objective C
-* [翻译: Objective C 消息发送](https://github.com/0oneo/iOSTranslation/blob/master/NSBlog/%E7%BF%BB%E8%AF%91:%20Objective%20C%20%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81.md)
-* [翻译: Objective C Message Forwarding](https://github.com/0oneo/iOSTranslation/blob/master/NSBlog/%E7%BF%BB%E8%AF%91%20Objective%20C%20Message%20Forwarding.md)
+* [翻译: Objective C 消息发送](https://github.com/0oneo/iOSTranslation/blob/master/NSBlog/%E7%BF%BB%E8%AF%91:%20Objective%20C%20%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81.md) [原文](https://www.mikeash.com/pyblog/friday-qa-2009-03-20-objective-c-messaging.html) 来自 [Mike Ash](https://www.mikeash.com/)
+* [翻译: Objective C Message Forwarding](https://github.com/0oneo/iOSTranslation/blob/master/NSBlog/%E7%BF%BB%E8%AF%91%20Objective%20C%20Message%20Forwarding.md) [原文](https://www.mikeash.com/pyblog/friday-qa-2009-03-27-objective-c-message-forwarding.html) 来自 [Mike Ash](https://www.mikeash.com/)
 
 ### Address Book UI
 
