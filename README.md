@@ -15,6 +15,9 @@
 * [翻译：Key Value Coding Apple 官方文档](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%EF%BC%9AKey%20Value%20Coding%20Apple%20%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3.md)
 * [翻译 Key Value Observing Programming Guide](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%20Key%20Value%20Observing%20Programming%20Guide.md)
 
+### System Configuration
+* [翻译 reachability](https://github.com/0oneo/iOSTranslation/blob/master/NSBlog/%E7%BF%BB%E8%AF%91%20Reachability.md) 来自 [Mike Ash](https://mikeash.com/) 的 [Friday Q&A 2013-06-14: Reachability](https://mikeash.com/pyblog/friday-qa-2013-06-14-reachability.html) 
+
 ### UIKit
 
 * [Lighter View Contoller](https://github.com/0oneo/iOSTranslation/blob/master/objc.io/issue1/light-view-controller.md) 来自 [ojbc.io](http://ojbc.io) 的 [Lighter View Controllers](http://www.objc.io/issues/1-view-controllers/lighter-view-controllers/)
