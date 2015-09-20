@@ -9,6 +9,7 @@
 ### Core Animation
 
 * [CALayer 的平行宇宙](https://github.com/0oneo/iOSTranslation/blob/master/CALayer%20%E7%9A%84%E5%B9%B3%E8%A1%8C%E5%AE%87%E5%AE%99.md) 来自  [Joel Kraut](http://blog.spacemanlabs.com/author/ultrajoke/) 的 [CALayer’s Parallel Universe](http://blog.spacemanlabs.com/2011/08/calayers-parallel-universe/)
+* [翻译 Core Animation Programming Guide](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%20Core%20Animation%20Programming%20Guide.md)
 
 ### Foundation
 * [翻译 NSObject：the Class and the Protocol](https://github.com/0oneo/iOSTranslation/blob/master/NSBlog/%E7%BF%BB%E8%AF%91%20NSObject%EF%BC%9Athe%20Class%20and%20the%20Protocol.md) [原文](https://mikeash.com/pyblog/friday-qa-2013-10-25-nsobject-the-class-and-the-protocol.html)来自 [Mike Ash](https://www.mikeash.com/)
