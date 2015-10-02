@@ -7,7 +7,7 @@
 
 <img src="https://raw.githubusercontent.com/0oneo/iOSTranslation/master/images/iOSDrawingPrinting/custom-view-and-standard-view.png" width=80% />
 
-## At a Glance**重要**: 一个视图由 `CAEAGLL
+## At a Glance
 iOS 本地的图形系统主要有三种技术：UIKit,  Core Graphics 和 Core Animation. UIKit 提供了视图和一些在这些视图中绘制的高级功能, Core Graphics 提供了额外的在 UIKit 视图中 (底层) 绘制支持, Core Animation 提供了应用 transformations 和动画到 UIKit 视图的能力. Core Animation 同样也负责视图组合 (view compositing)。
 
 ## Custom UI Views Allow Greater Drawing Flexibility
