@@ -7,7 +7,7 @@
 
 <img src="https://raw.githubusercontent.com/0oneo/iOSTranslation/master/images/iOSDrawingPrinting/custom-view-and-standard-view.png" width=80% />
 
-## At a Glance
+## At a Glance**重要**: 一个视图由 `CAEAGLL
 iOS 本地的图形系统主要有三种技术：UIKit,  Core Graphics 和 Core Animation. UIKit 提供了视图和一些在这些视图中绘制的高级功能, Core Graphics 提供了额外的在 UIKit 视图中 (底层) 绘制支持, Core Animation 提供了应用 transformations 和动画到 UIKit 视图的能力. Core Animation 同样也负责视图组合 (view compositing)。
 
 ## Custom UI Views Allow Greater Drawing Flexibility
@@ -273,7 +273,11 @@ Core Graphics 框架包含额外的函数来创建 patterns，gradients，和 sh
 要翻转一个绘制到 Core Graphics context 的对象，从而让它正确的显示到一个 UIKit 视图上。你必须分两步修改 CTM。你移动原点到绘制区域的左上角，然后你应用一个 scale translation，将 y 坐标乘以 -1。代码如下：
 
 ```objc
-CGContextSaveGState(graphicsContext);CGContextTranslateCTM(graphicsContext, 0.0, imageHeight);CGContextScaleCTM(graphicsContext, 1.0, -1.0);CGContextDrawImage(graphicsContext, image, CGRectMake(0, 0, imageWidth, imageHeight));CGContextRestoreGState(graphicsContext);
+CGContextSaveGState(graphicsContext);
+CGContextTranslateCTM(graphicsContext, 0.0, imageHeight);
+CGContextScaleCTM(graphicsContext, 1.0, -1.0);
+CGContextDrawImage(graphicsContext, image, CGRectMake(0, 0, imageWidth, imageHeight));
+CGContextRestoreGState(graphicsContext);
 ```
 
 如果你使用一个 Core Graphics image 对象创建一个 `UIImage` 对象，UIKit 会为你 flip transform。每个 `UIImage` 对象底层都有一个 `CGImageRef` opaque type。你可以通过 `CGImage` 属性来获取一个 Core Graphics 对象，并使用这个对象来做一些工作。(Core Graphics 有一些 image-related facilities 在 UIKit 中不可用) 当你结束使用后，你可以从修改过的 `CGImageRef` 对象中来重新创建 `UIImage` 对象。
@@ -365,9 +369,14 @@ iOS 3.2 起，你可以使用 `UIBezierPath` 类来创建基于向量的 path。
 
 ```objc
 UIBezierPath *aPath = [UIBezierPath bezierPath];
-// Set the starting point of the shape.[aPath moveToPoint:CGPointMake(100.0, 0.0)];
+// Set the starting point of the shape.
+[aPath moveToPoint:CGPointMake(100.0, 0.0)];
 
-// Draw the lines.[aPath addLineToPoint:CGPointMake(200.0, 40.0)];[aPath addLineToPoint:CGPointMake(160, 140)];[aPath addLineToPoint:CGPointMake(40.0, 140)];[aPath addLineToPoint:CGPointMake(0.0, 40.0)];
+// Draw the lines.
+[aPath addLineToPoint:CGPointMake(200.0, 40.0)];
+[aPath addLineToPoint:CGPointMake(160, 140)];
+[aPath addLineToPoint:CGPointMake(40.0, 140)];
+[aPath addLineToPoint:CGPointMake(0.0, 40.0)];
 [aPath closePath];
 ```
 
@@ -416,13 +425,19 @@ UIBezierPath *aPath = [UIBezierPath bezierPath];
 
 有两种方式修改与一个 `UIBezierPath` 对象关联的 path。你可以完全使用 Core Graphics 函数来修改，或者混合使用 Core Graphics 函数和 `UIBezierPath` 方法。完全使用 `Core Graphics` 函数调用修改 path 在某些方面要简单很多。你创建一个 mutable 的 `CGPathRef` 数据类型，然后调用任何你需要的函数来修改 path 的信息。当你修改完成的时候，将 path 对象赋给相应的 `UIBezierPath` 对象。如下所示
 
-```objc// Create the path data.
-CGMutablePathRef cgPath = CGPathCreateMutable();CGPathAddEllipseInRect(cgPath, NULL, CGRectMake(0, 0, 300, 300)); CGPathAddEllipseInRect(cgPath, NULL, CGRectMake(50, 50, 200, 200));
+```objc
+// Create the path data.
+CGMutablePathRef cgPath = CGPathCreateMutable();
+CGPathAddEllipseInRect(cgPath, NULL, CGRectMake(0, 0, 300, 300)); CGPathAddEllipseInRect(cgPath, NULL, CGRectMake(50, 50, 200, 200));
 
 // Now create the UIBezierPath object.
-UIBezierPath *aPath = [UIBezierPath bezierPath];aPath.CGPath = cgPath;aPath.usesEvenOddFillRule = YES;
+UIBezierPath *aPath = [UIBezierPath bezierPath];
+aPath.CGPath = cgPath;
+aPath.usesEvenOddFillRule = YES;
 
-// After assigning it to the UIBezierPath object, you can release// your CGPathRef data type safely.CGPathRelease(cgPath);
+// After assigning it to the UIBezierPath object, you can release
+// your CGPathRef data type safely.
+CGPathRelease(cgPath);
 ```
 
 如果你选择混合使用 Core Graphics 函数和 `UIBezierPath` 方法，你必须谨慎的在两者之间移动 path 信息。因为一个 `UIBezierPath` 对象拥有潜在的 `CGPathRef` 数据，你不能简单的获取这个类型然后直接修改。相反，你必须创建一个 mutable 拷贝，修改这份拷贝，然后将这个拷贝赋给 `CGPath` 属性。
@@ -431,11 +446,15 @@ UIBezierPath *aPath = [UIBezierPath bezierPath];aPath.CGPath = cgPath;aPath.us
 UIBezierPath *aPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, 300, 300)];
 
 // Get the CGPathRef and create a mutable version.
-CGPathRef cgPath = aPath.CGPath;CGMutablePathRef  mutablePath = CGPathCreateMutableCopy(cgPath);
+CGPathRef cgPath = aPath.CGPath;
+CGMutablePathRef  mutablePath = CGPathCreateMutableCopy(cgPath);
 
-// Modify the path and assign it back to the UIBezierPath object.CGPathAddEllipseInRect(mutablePath, NULL, CGRectMake(50, 50, 200, 200));aPath.CGPath = mutablePath;
+// Modify the path and assign it back to the UIBezierPath object.
+CGPathAddEllipseInRect(mutablePath, NULL, CGRectMake(50, 50, 200, 200));
+aPath.CGPath = mutablePath;
 
-// Release both the mutable copy of the path.CGPathRelease(mutablePath);
+// Release both the mutable copy of the path.
+CGPathRelease(mutablePath);
 ```
 
 ## Rendering the Contents of a Bézier Path Object
@@ -452,18 +471,30 @@ CGPathRef cgPath = aPath.CGPath;CGMutablePathRef  mutablePath = CGPathCreateMut
     // Create an oval shape to draw.
     UIBezierPath *aPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, 200, 100)];
     
-    // Set the render colors.    [[UIColor blackColor] setStroke];    [[UIColor redColor] setFill];
+    // Set the render colors.
+    [[UIColor blackColor] setStroke];
+    [[UIColor redColor] setFill];
     
     CGContextRef aRef = UIGraphicsGetCurrentContext();
     
-    // If you have content to draw after the shape,    // save the current state before changing the transform.    //CGContextSaveGState(aRef);
+    // If you have content to draw after the shape,
+    // save the current state before changing the transform.
+    //CGContextSaveGState(aRef);
     
-    // Adjust the view's origin temporarily. The oval is    // now drawn relative to the new origin point.    CGContextTranslateCTM(aRef, 50, 50);
+    // Adjust the view's origin temporarily. The oval is
+    // now drawn relative to the new origin point.
+    CGContextTranslateCTM(aRef, 50, 50);
     
-    // Adjust the drawing options as needed.    aPath.lineWidth = 5;
+    // Adjust the drawing options as needed.
+    aPath.lineWidth = 5;
     
-    // Fill the path before stroking it so that the fill    // color does not obscure the stroked line.    [aPath fill];    [aPath stroke];
-        // Restore the graphics state before drawing any other content.    //CGContextRestoreGState(aRef);
+    // Fill the path before stroking it so that the fill
+    // color does not obscure the stroked line.
+    [aPath fill];
+    [aPath stroke];
+    
+    // Restore the graphics state before drawing any other content.
+    //CGContextRestoreGState(aRef);
 ```
 
 ## Doing Hit-Detection on a Path
@@ -480,7 +511,9 @@ CGPathRef cgPath = aPath.CGPath;CGMutablePathRef  mutablePath = CGPathCreateMut
    BOOL    isHit = NO;
     
    // Determine the drawing mode to use. Default to
-   // detecting hits on the stroked portion of the path.   CGPathDrawingMode mode = kCGPathStroke;   if (inFill) {
+   // detecting hits on the stroked portion of the path.
+   CGPathDrawingMode mode = kCGPathStroke;
+   if (inFill) {
         // Look for hits in the fill area of the path instead.
         if (path.usesEvenOddFillRule) {
             mode = kCGPathEOFill;
@@ -489,7 +522,9 @@ CGPathRef cgPath = aPath.CGPath;CGMutablePathRef  mutablePath = CGPathCreateMut
         }
     }
 
-    // Save the graphics state so that the path can be removed later.    CGContextSaveGState(context);    CGContextAddPath(context, cgPath);
+    // Save the graphics state so that the path can be removed later.
+    CGContextSaveGState(context);
+    CGContextAddPath(context, cgPath);
     
     // Do the hit detection.
     isHit = CGContextPathContainsPoint(context, point, mode);
@@ -515,7 +550,10 @@ CGPathRef cgPath = aPath.CGPath;CGMutablePathRef  mutablePath = CGPathCreateMut
 NSString *imagePath = [[NSBundle mainBundle] pathForResource:@"myImage" ofType:@"png"];
 UIImage *myImageObj = [[UIImage alloc] initWithContentsOfFile:imagePath];
 
-// Store the image into a property of type UIImage *// for use later in the class's drawRect: method.self.anImage = myImageObj;
+
+// Store the image into a property of type UIImage *
+// for use later in the class's drawRect: method.
+self.anImage = myImageObj;
 ```
 
 要在视图的 `drawRect:` 方法中显式绘制结果图片的话，你可以使用 `UIImage` 类中任何可用的绘制方法。这些方法允许你指定在你的视图的什么位置绘制你的图片，因此不需要你在绘制之前创建和应用一个单独的 transform。
@@ -576,14 +614,28 @@ UIGraphicsBeginImageContextWithOptions(CGSizeMake(100.0,100.0), NO, 2.0);
 ```objc
 // Other code precedes...
 
-CGRect pageRect = CGPDFPageGetBoxRect(page, kCGPDFMediaBox);pdfScale = self.frame.size.width/pageRect.size.width;pageRect.size = CGSizeMake(pageRect.size.width * pdfScale, pageRect.size.height * pdfScale);
-UIGraphicsBeginImageContextWithOptions(pageRect.size, YES, pdfScale);CGContextRef context = UIGraphicsGetCurrentContext();
+CGRect pageRect = CGPDFPageGetBoxRect(page, kCGPDFMediaBox);
+pdfScale = self.frame.size.width/pageRect.size.width;
+pageRect.size = CGSizeMake(pageRect.size.width * pdfScale, pageRect.size.height * pdfScale);
+UIGraphicsBeginImageContextWithOptions(pageRect.size, YES, pdfScale);
+CGContextRef context = UIGraphicsGetCurrentContext();
 
-// First fill the background with white.CGContextSetRGBFillColor(context, 1.0,1.0,1.0,1.0);CGContextFillRect(context,pageRect);CGContextSaveGState(context);
+// First fill the background with white.
+CGContextSetRGBFillColor(context, 1.0,1.0,1.0,1.0);
+CGContextFillRect(context,pageRect);
+CGContextSaveGState(context);
 
-// Flip the context so that the PDF page is rendered right side upCGContextTranslateCTM(context, 0.0, pageRect.size.height);CGContextScaleCTM(context, 1.0, -1.0);
+// Flip the context so that the PDF page is rendered right side up
+CGContextTranslateCTM(context, 0.0, pageRect.size.height);
+CGContextScaleCTM(context, 1.0, -1.0);
   
-// Scale the context so that the PDF page is rendered at the// correct size for the zoom level.CGContextScaleCTM(context, pdfScale,pdfScale);CGContextDrawPDFPage(context, page);CGContextRestoreGState(context);UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();UIGraphicsEndImageContext();
+// Scale the context so that the PDF page is rendered at the
+// correct size for the zoom level.
+CGContextScaleCTM(context, pdfScale,pdfScale);
+CGContextDrawPDFPage(context, page);
+CGContextRestoreGState(context);
+UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+UIGraphicsEndImageContext();
   
 backgroundImageView = [[UIImageView alloc] initWithImage:backgroundImage];
 
@@ -637,11 +689,16 @@ PDF 文档使用基于页面的方式组织它们的内容。这个结构强加�
             BOOL done = NO;
             
             do {
-                // Mark the beginning of a new page.                UIGraphicsBeginPDFPageWithInfo(CGRectMake(0, 0, 612, 792), nil);
+                // Mark the beginning of a new page.
+                UIGraphicsBeginPDFPageWithInfo(CGRectMake(0, 0, 612, 792), nil);
                 
-                // Draw a page number at the bottom of each page.                currentPage++;                [self drawPageNumber:currentPage];
+                // Draw a page number at the bottom of each page.
+                currentPage++;
+                [self drawPageNumber:currentPage];
                 
-                // Render the current page and update the current range to                // point to the beginning of the next page.                currentRange = [self renderPageWithTextRange:currentRange andFramesetter:framesetter];
+                // Render the current page and update the current range to
+                // point to the beginning of the next page.
+                currentRange = [self renderPageWithTextRange:currentRange andFramesetter:framesetter];
                 
                 // If we're at the end of the text, exit the loop.
                 if (currentRange.location == CFAttributedStringGetLength((CFAttributedStringRef)currentText)) {
@@ -649,12 +706,16 @@ PDF 文档使用基于页面的方式组织它们的内容。这个结构强加�
                 }
             } while (!done);
             
-            // Close the PDF context and write the contents out.            UIGraphicsEndPDFContext();  
-                        // Release the framewetter.            CFRelease(framesetter);
+            // Close the PDF context and write the contents out.
+            UIGraphicsEndPDFContext();  
+            
+            // Release the framewetter.
+            CFRelease(framesetter);
         } else {
             NSLog(@"Could not create the framesetter needed to lay out the atrributed string.");
         }
-        // Release the attributed string.        CFRelease(currentText);
+        // Release the attributed string.
+        CFRelease(currentText);
     } else {
         NSLog(@"Could not create the attributed string for the framesetter");
     }
@@ -676,20 +737,35 @@ PDF 文档使用基于页面的方式组织它们的内容。这个结构强加�
     // Get the graphics context.
     CGContextRef    currentContext = UIGraphicsGetCurrentContext();
     
-    // Put the text matrix into a known state. This ensures    // that no old scaling factors are left in place.    CGContextSetTextMatrix(currentContext, CGAffineTransformIdentity);
+    // Put the text matrix into a known state. This ensures
+    // that no old scaling factors are left in place.
+    CGContextSetTextMatrix(currentContext, CGAffineTransformIdentity);
     
-    // Create a path object to enclose the text. Use 72 point    // margins all around the text.    CGRect    frameRect = CGRectMake(72, 72, 468, 648);    CGMutablePathRef framePath = CGPathCreateMutable();    CGPathAddRect(framePath, NULL, frameRect);
+    // Create a path object to enclose the text. Use 72 point
+    // margins all around the text.
+    CGRect    frameRect = CGRectMake(72, 72, 468, 648);
+    CGMutablePathRef framePath = CGPathCreateMutable();
+    CGPathAddRect(framePath, NULL, frameRect);
     
     // Get the frame that will do the rendering.
     // The currentRange variable specifies only the starting point. The framesetter
-    // lays out as much text as will fit into the frame.    CTFrameRef frameRef = CTFramesetterCreateFrame(framesetter, currentRange, framePath, NULL);
+    // lays out as much text as will fit into the frame.
+    CTFrameRef frameRef = CTFramesetterCreateFrame(framesetter, currentRange, framePath, NULL);
     CGPathRelease(framePath);
     
-    // Core Text draws from the bottom-left corner up, so flip    // the current transform prior to drawing.    CGContextTranslateCTM(currentContext, 0, 792);    CGContextScaleCTM(currentContext, 1.0, -1.0);
+    // Core Text draws from the bottom-left corner up, so flip
+    // the current transform prior to drawing.
+    CGContextTranslateCTM(currentContext, 0, 792);
+    CGContextScaleCTM(currentContext, 1.0, -1.0);
      
-    // Draw the frame.    CTFrameDraw(frameRef, currentContext);
+    // Draw the frame.
+    CTFrameDraw(frameRef, currentContext);
     
-    // Update the current range based on what was drawn.    currentRange = CTFrameGetVisibleStringRange(frameRef);    currentRange.location += currentRange.length;    currentRange.length = 0;    CFRelease(frameRef);
+    // Update the current range based on what was drawn.
+    currentRange = CTFrameGetVisibleStringRange(frameRef);
+    currentRange.location += currentRange.length;
+    currentRange.length = 0;
+    CFRelease(frameRef);
      
     return currentRange;
 }
@@ -910,7 +986,9 @@ UIKit 允许你设置一个简单的 print formatter 给一个 print job。如�
     pic.delegate = self;
     
     UIPrintInfo *printInfo = [UIPrintInfo printInfo];
-    printInfo.outputType = UIPrintInfoOutputGeneral;    printInfo.jobName = self.documentName;    pic.printInfo = printInfo;
+    printInfo.outputType = UIPrintInfoOutputGeneral;
+    printInfo.jobName = self.documentName;
+    pic.printInfo = printInfo;
     
     UIMarkupTextPrintFormatter *htmlFormatter = [[UIMarkupTextPrintFormatter alloc] initWithMarkupText:self.htmlString];
     htmlFormatter.startPage = 0;
@@ -941,14 +1019,20 @@ UIKit 允许你设置一个简单的 print formatter 给一个 print job。如�
 要获取一个 `UIView` 对象的 view print formatter，调用视图的 `viewPrintFormatter` 方法。设置开始页和任何布局信息，然后设置这个对象给 `UIPrintInteractionController` 的 `printFormatter` 属性。另一种方式是，你可以添加 view print formatter 到一个 `UIPrintPageRenderer` 对象，如果你使用这个对象来绘制部分你打印的内容。下面的代码展示了使用一个 `UIWebView` 的 view print formatter 来打印视图的内容。
 
 ```objc
-- (void)printWebPage:(id)sender {    UIPrintInteractionController *controller = [UIPrintInteractionController sharedPrintController];
-    void (^completionHandler)(UIPrintInteractionController *, BOOL, NSError *) = ^(UIPrintInteractionController *printController, BOOL completed, NSError  *error) {
+- (void)printWebPage:(id)sender {
+    UIPrintInteractionController *controller = [UIPrintInteractionController sharedPrintController];
+    void (^completionHandler)(UIPrintInteractionController *, BOOL, NSError *) = ^(UIPrintInteractionController *printController, BOOL completed, NSError
+  *error) {
         if(!completed && error){
             NSLog(@"FAILED! due to error in domain %@ with error code %u", error.domain, error.code);
         }
     };
     UIPrintInfo *printInfo = [UIPrintInfo printInfo];
-    printInfo.outputType = UIPrintInfoOutputGeneral;    printInfo.jobName = [urlField text];    printInfo.duplex = UIPrintInfoDuplexLongEdge;    controller.printInfo = printInfo;    controller.showsPageRange = YES;
+    printInfo.outputType = UIPrintInfoOutputGeneral;
+    printInfo.jobName = [urlField text];
+    printInfo.duplex = UIPrintInfoDuplexLongEdge;
+    controller.printInfo = printInfo;
+    controller.showsPageRange = YES;
     
     UIViewPrintFormatter *viewFormatter = [self.myWebView viewPrintFormatter];
     viewFormatter.startPage = 0;
@@ -1000,12 +1084,24 @@ Override ... | To ...
 
 ```objc
 - (void)drawHeaderForPageAtIndex:(NSInteger)pageIndex inRect:(CGRect)headerRect {
-    UIFont *font = [UIFont fontWithName:@"Helvetica" size:12.0];    CGSize titleSize = [self.jobTitle sizeWithFont:font];    //center title in header    CGFloat drawX = CGRectGetMaxX(headerRect)/2 - titleSize.width/2;    CGFloat drawY = CGRectGetMaxY(headerRect) - titleSize.height;    CGPoint drawPoint = CGPointMake(drawX, drawY);    [self.jobTitle drawAtPoint:drawPoint withFont: font];
+    UIFont *font = [UIFont fontWithName:@"Helvetica" size:12.0];
+    CGSize titleSize = [self.jobTitle sizeWithFont:font];
+    //center title in header
+    CGFloat drawX = CGRectGetMaxX(headerRect)/2 - titleSize.width/2;
+    CGFloat drawY = CGRectGetMaxY(headerRect) - titleSize.height;
+    CGPoint drawPoint = CGPointMake(drawX, drawY);
+    [self.jobTitle drawAtPoint:drawPoint withFont: font];
 }
 
 - (void)drawFooterForPageAtIndex:(NSInteger)pageIndex  inRect:(CGRect)footerRect {
-    UIFont *font = [UIFont fontWithName:@"Helvetica" size:12.0];    NSString *pageNumber = [NSString stringWithFormat:@"%d.", pageIndex+1];    // page number at right edge of footer rect    CGSize pageNumSize = [pageNumber sizeWithFont:font];
-    CGFloat drawX = CGRectGetMaxX(footerRect) - pageNumSize.width - 1.0;    CGFloat drawY = CGRectGetMaxY(footerRect) - pageNumSize.height;    CGPoint drawPoint = CGPointMake(drawX, drawY);    [pageNumber drawAtPoint:drawPoint withFont: font];
+    UIFont *font = [UIFont fontWithName:@"Helvetica" size:12.0];
+    NSString *pageNumber = [NSString stringWithFormat:@"%d.", pageIndex+1];
+    // page number at right edge of footer rect
+    CGSize pageNumSize = [pageNumber sizeWithFont:font];
+    CGFloat drawX = CGRectGetMaxX(footerRect) - pageNumSize.width - 1.0;
+    CGFloat drawY = CGRectGetMaxY(footerRect) - pageNumSize.height;
+    CGPoint drawPoint = CGPointMake(drawX, drawY);
+    [pageNumber drawAtPoint:drawPoint withFont: font];
 }  
 ```
 
@@ -1047,7 +1143,11 @@ iOS 4.2 的SDK 起提供了一个 Print Simulator 应用，你可以使用来测
 一些 iOS 设备不支持打印。一旦你的视图加载你就应该立即知道这个情况。如果打印对于你的设备不可用，你要么通过编程不添加任何打印界面元素 (按钮，bar button item等等)，或你应该移除任何从 nib 文件中加载的任何打印元素。要决定打印是否可用，调用 `UIPrintInteractionController` 类的类方法 `isPrintingAvailable`。下面的代码给你展示怎么做，它假设一个 print button 从 nib 中加载。
 
 ```objc
-- (void)viewDidLoad {    if (![UIPrintInteractionController isPrintingAvailable])        [myPrintButton removeFromSuperView];    // other tasks...}
+- (void)viewDidLoad {
+    if (![UIPrintInteractionController isPrintingAvailable])
+        [myPrintButton removeFromSuperView];
+    // other tasks...
+}
 ```
 
 > **注意**: 尽管你可以关闭一个打印元素，但移除是推荐的。方法 `isPrintingAvailable` 对于一个给定设备返回值从不会改变，它反映了这个设备是否支持打印，而不是打印是否当前可用。
@@ -1067,7 +1167,11 @@ iOS 4.2 的SDK 起提供了一个 Print Simulator 应用，你可以使用来测
 
 ```objc
 UIPrintInteractionController *controller = [UIPrintInteractionController sharedPrintController];
-UIPrintInfo *printInfo = [UIPrintInfo printInfo];printInfo.outputType = UIPrintInfoOutputGeneral;printInfo.jobName = [self.path lastPathComponent];printInfo.duplex = UIPrintInfoDuplexLongEdge;controller.printInfo = printInfo;
+UIPrintInfo *printInfo = [UIPrintInfo printInfo];
+printInfo.outputType = UIPrintInfoOutputGeneral;
+printInfo.jobName = [self.path lastPathComponent];
+printInfo.duplex = UIPrintInfoDuplexLongEdge;
+controller.printInfo = printInfo;
 ``` 
 
 `UIPrintInfo` 的一个属性是打印方向：portrait 或 landscape。你也许想要打印方向适应被打印内容的尺寸。换句话说，如果对象很大，并且它的宽大于高，landscape 更适合于它。下面的代码使用一张图片进行了说明。
@@ -1075,7 +1179,11 @@ UIPrintInfo *printInfo = [UIPrintInfo printInfo];printInfo.outputType = UIPrint
 ```objc
 UIPrintInteractionController *controller = [UIPrintInteractionController sharedPrintController];
 // other code here...
-UIPrintInfo *printInfo = [UIPrintInfo printInfo];UIImage *image = ((UIImageView *)self.view).image;printInfo.outputType = UIPrintInfoOutputPhoto;printInfo.jobName = @"Image from PrintPhoto";printInfo.duplex = UIPrintInfoDuplexNone;
+UIPrintInfo *printInfo = [UIPrintInfo printInfo];
+UIImage *image = ((UIImageView *)self.view).image;
+printInfo.outputType = UIPrintInfoOutputPhoto;
+printInfo.jobName = @"Image from PrintPhoto";
+printInfo.duplex = UIPrintInfoDuplexNone;
 // only if drawing...
 if (!controller.printingItem && image.size.width > image.size.height) {
     printInfo.orientation = UIPrintInfoOrientationLandscape;
@@ -1094,7 +1202,13 @@ if (!controller.printingItem && image.size.width > image.size.height) {
 delegate 可以采用两种方式。它可以检测传入的 `UIPrintPaper` 对象数组，找到最合适的那一个。或者可以让系统调用 `UIPrintPaper` 类方法 `bestPaperForPageSize:withPapersFromArray:` 来选择最合适的对象。下面的代码展示了这个方法的一个实现，这个应用支持多种文档类型，每个有它自己的页面大小。
 
 ```objc
-- (UIPrintPaper *)printInteractionController:(UIPrintInteractionController *)pic    choosePaper:(NSArray *)paperList {    // custom method & properties...    CGSize pageSize = [self pageSizeForDocumentType:self.document.type];    return [UIPrintPaper bestPaperForPageSize:pageSize        withPapersFromArray:paperList];}
+- (UIPrintPaper *)printInteractionController:(UIPrintInteractionController *)pic
+    choosePaper:(NSArray *)paperList {
+    // custom method & properties...
+    CGSize pageSize = [self pageSizeForDocumentType:self.document.type];
+    return [UIPrintPaper bestPaperForPageSize:pageSize
+        withPapersFromArray:paperList];
+}
 ```
 
 通常，使用自定义 page renderers 的应用使得页面的尺寸成为了计算一个 print job 页面数的因子。
@@ -1102,7 +1216,8 @@ delegate 可以采用两种方式。它可以检测传入的 `UIPrintPaper` 对�
 如果你需要向用户显示页面大小 (对于一个文字处理应用，例如)，你必须自己实现这个 UI，并且你必须在你的 `printInteractionController:choosePaper:` 实现中使用页面大小。例如：
 
 ```objc
-// Create a custom CGSize for 8.5" x 11" paper.CGSize custompapersize = CGSizeMake(8.5 * 72.0, 11.0 * 72.0);
+// Create a custom CGSize for 8.5" x 11" paper.
+CGSize custompapersize = CGSizeMake(8.5 * 72.0, 11.0 * 72.0);
 ```
 
 `UIPrintInfo` 类也让你提供额外的设置，如打印方向，选择的打印机，和 duplexing 模式 (如果打印机支持 duplex printing) 。用户可以改变你选择的打印机和 duplex 设置。
@@ -1125,7 +1240,12 @@ delegate 可以采用两种方式。它可以检测传入的 `UIPrintPaper` 对�
 前两个方法是为了在 iPad 设备上调用；第三个方法是为了在 iPhone 和 iPod 设备上调用。你可以根据条件为每种设备编码 (或，user-interface idiom) 通过调用 `UI_USER_INTERFACE_IDIOM` 并与 `UIUserInterfaceIdiomPad` 和 `UIUserInterfaceIdiomPhone` 比较结果。下面的代码展示了一个例子：
 
 ```objc
-if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {    [controller presentFromBarButtonItem:self.printButton animated:YES        completionHandler:completionHandler];} else {    [controller presentAnimated:YES completionHandler:completionHandler];}
+if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+    [controller presentFromBarButtonItem:self.printButton animated:YES
+        completionHandler:completionHandler];
+} else {
+    [controller presentAnimated:YES completionHandler:completionHandler];
+}
 ```
 
 如果你的应用在 iPhone 上调用 iPad 特定的方法，默认的行为是在一页 sheet 上展示打印选项，sheet 页从屏幕下方滑出。如果你的应用在 iPad 上调用 iPhone 特定的方法的话，默认的行为是从当前的 window 的 frame 动画显示这个 popover 视图。
@@ -1158,7 +1278,13 @@ if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {    [controller pres
 下面的代码清理一些内容属性，如果有错误，做日志记录。
 
 ```objc
-void (^completionHandler)(UIPrintInteractionController *, BOOL, NSError *) =        ^(UIPrintInteractionController *pic, BOOL completed, NSError *error) {    self.content = nil;    if (!completed && error)};NSLog(@"FAILED! due to error in domain %@ with error code %u",    error.domain, error.code);
+void (^completionHandler)(UIPrintInteractionController *, BOOL, NSError *) =
+        ^(UIPrintInteractionController *pic, BOOL completed, NSError *error) {
+    self.content = nil;
+    if (!completed && error)
+};
+NSLog(@"FAILED! due to error in domain %@ with error code %u",
+    error.domain, error.code);
 };
 ```
 
@@ -1253,10 +1379,16 @@ UIImage *anImage = [UIImage imageNamed:@"Button"];
 
 ```objc
 GLuint colorRenderbuffer;
-glGenRenderbuffersOES(1, &colorRenderbuffer);glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);[myContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:myEAGLLayer];
+glGenRenderbuffersOES(1, &colorRenderbuffer);
+glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+[myContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:myEAGLLayer];
 
-// Get the renderbuffer size.GLint width;GLint height;glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &width);glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &height);
-----
+// Get the renderbuffer size.
+GLint width;
+GLint height;
+glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &width);
+glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &height);
+```
 
 > **重要**: 一个视图由 `CAEAGLLayer` 对象支撑的视图不应该实现一个自定义 `drawRect:` 方法。实现 `drawRect:` 方法会使得系统改变视图的默认 scale factor，从而导致它与屏幕的 scale factor 相匹配。如果你的绘制代码不期望这种行为，你的应用内容将不会正确的渲染。
 
