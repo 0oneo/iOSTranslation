@@ -24,3 +24,6 @@
  
 ### UIKit
 * [Lighter View Contoller](https://github.com/0oneo/iOSTranslation/blob/master/objc.io/issue1/light-view-controller.md) 来自 [ojbc.io](http://ojbc.io) 的 [Lighter View Controllers](http://www.objc.io/issues/1-view-controllers/lighter-view-controllers/)
+
+### Drawing & Render
+* [翻译 Drawing and Printing Guide for iOS](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%20Drawing%20and%20Printing%20Guide%20for%20iOS.md)
