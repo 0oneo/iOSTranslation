@@ -16,6 +16,8 @@
 * [CALayer 的平行宇宙](https://github.com/0oneo/iOSTranslation/blob/master/CALayer%20%E7%9A%84%E5%B9%B3%E8%A1%8C%E5%AE%87%E5%AE%99.md) 来自  [Joel Kraut](http://blog.spacemanlabs.com/author/ultrajoke/) 的 [CALayer’s Parallel Universe](http://blog.spacemanlabs.com/2011/08/calayers-parallel-universe/)
 * [翻译 Core Animation Programming Guide](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%20Core%20Animation%20Programming%20Guide.md)
 * [翻译 Animation Types and Timing Programming Guide](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%20Animation%20Types%20and%20Timing%20Programming%20Guide.md)
+* [翻译 Animation Overview](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%20Animation%20Overview.md)
+* [翻译 Animation Programming Guide for Cocoa](https://github.com/0oneo/iOSTranslation/blob/master/Apple/%E7%BF%BB%E8%AF%91%20Animation%20Programming%20Guide%20for%20Cocoa.md)
 
 ### System Configuration
 * [翻译 reachability](https://github.com/0oneo/iOSTranslation/blob/master/NSBlog/%E7%BF%BB%E8%AF%91%20Reachability.md) 来自 [Mike Ash](https://mikeash.com/) 的 [Friday Q&A 2013-06-14: Reachability](https://mikeash.com/pyblog/friday-qa-2013-06-14-reachability.html) 
