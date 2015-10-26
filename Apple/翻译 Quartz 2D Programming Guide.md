@@ -1394,12 +1394,98 @@ void MyStencilPatternPainting (CGContextRef myContext, const Rect *windowRect) {
 
 ----
 # Shadows
+一个 Shasow 是一张图片，在一个图形对象之下且有偏移，这样可以模拟一个光源投在图形对象只上的效果，如 Figure 7-1 所示。文本也可以有阴影。阴影可以使图片看上去是三维的，或像是浮起来的。
+
+<img src="https://raw.githubusercontent.com/0oneo/ImageArchive/master/drawingwithquartz2d/7shadow/a_shadow.png" width=80% />
+
+Shadows 有三个特点：
+
+* 一个 x 轴的偏移，指定在水平方向阴影偏移图片的距离
+* 一个 y 轴的偏移，指定在垂直方向阴影偏移图片的距离
+* 一个 blur 值，指定图片是否有一个硬边 (hard edge)，就像 Figure 7-2 的左边那样，或弥散的边，像图中右边的那样。
+
+这章描述了 shadow 是怎样工作的，和怎样使用 Quartz 2D API 来创建它们。
+
+<img src="https://raw.githubusercontent.com/0oneo/ImageArchive/master/drawingwithquartz2d/7shadow/a_shadow_with_no_blur_and_another_with_a_soft_edge.png" width=80% />
 
 ## How Shadows Work
+Quartz 中的阴影是 graphics state 的一部分。你可以调用函数 `CGContextSetShadow` 来设置，传递一个 graphics context， offset values，和一个 blur 值。在阴影设置好后，你绘制的任何一个对象有一个阴影，这个阴影是一个在 device RGB 颜色空间中 1/3 透明度的黑色。也就是说，shadow 使用 RGBA 值 {0, 0, 0, 1.0/3.0}。
+
+你可以通过调用函数 `CGContextSetShadowWithColor` 来绘制有颜色的阴影，调用时传一个 graphics context，offset value，a blur value，and a `CGColor` 对象。提供给颜色的值依赖于你想要绘制的颜色空间。
+
+如果你在  `CGContextSetShadow` 或 `CGContextSetShadowWithColor` 之前保存 graphics state，你可以通过恢复 graphics state 来关闭阴影。你也可以通过设置阴影颜色为 `NULL` 来关闭阴影。
 
 ## Shadow Drawing Conventions Vary Based on the Context
+之前描述的 offset 指定了阴影相对于产生阴影的图片的位置。这些偏移被 context 翻译，被用于计算阴影的位置：
+
+* 一个正向的 x 偏移表示阴影在 graphics 对象的右边。
+* 在 OS X 中，一个正向的 y 偏移表示向上的位置，这是符合 Quartz 2D 中默认的坐标系的。
+* 在 iOS 中，如果你的应用使用 Quartz 2D APIs 来创建一个 PDF 或 bitmap context 的话，正值 y 表示向上的位置。
+* 在 iOS 中，如果 graphics context 是由 UIKit 创建，如果 `UIView` 创建的 graphics context，或一个 `UIGraphicsBeginImageContextWithOptions` 函数创建的 context，然后一个正的 y 值表示向下的位置。这符合 UIKit 约定的坐标系。
+* shadow-drawing 约定并不会受到 curren transformation matrix 的影响。
 
 ## Painting with Shadows
+使用以下步骤来绘制阴影：
+
+1. 保存 graphics state
+2. 调用 `CGContextSetShadow` 函数，并传递合适的参数
+3. 进行你想要应用 shadow 的任何绘制操作。
+4. 恢复 graphics state
+
+使用以下步骤来绘制有颜色的阴影：
+
+1. 保存 graphics state
+2. 创建一个 `CGColorSpace` 对象来保证 Quartz 正确的翻译阴影的颜色值
+3. 创建一个 `CGColor` 对象来指定你想使用的 shadow 颜色。
+4. 调用函数 `CGContextSetShadowWithColor`，并传递合适的值。
+5. 进行所有你想应用的阴影的绘制操作。
+6. 恢复 graphics state。
+
+Figure 7-3 中带有阴影的两个矩形，一个有颜色，一个没有。
+
+<img src="https://raw.githubusercontent.com/0oneo/ImageArchive/master/drawingwithquartz2d/7shadow/a_colored_shadow_and_a_gray_shadow.png" width=80% />
+
+下面的函数展示了怎么设置阴影来绘制 Figure 7-3 中的矩形框。一个详细的解释紧随其后。
+
+```objc
+void MyDrawWithShadows (CGContextRef myContext, CGFloat wd, CGFloat ht) {   //1
+    CGSize myShadowOffset = CGSizeMake(-15, 20);                          //2
+    CGFloat myColorValues[] = {1, 0, 0, 0.6};                                           //3
+    CGColorRef myColor;                                                                            //4      
+    CGColorSpaceRef myColorSpace;                                                     //5
+    CGContextSaveGState(myContext)                                                    //6
+    
+    CGContextSetShadow (myContext, myShadowOffset, 5);             //7
+    // Your drawing code here                                                                   //8
+    CGContextSetRGBFillColor (myContext, 0, 1, 0, 1);
+    CGContextFillRect (myContext, CGRectMake (wd/3 + 75, ht/2 , wd/4, ht/4));
+    
+    myColorSpace = CGColorSpaceCreateDeviceRGB ();                 //9
+    myColor = CGColorCreate (myColorSpace, myColorValues);    //10
+    CGContextSetShadowWithColor (myContext, myShadowOffset, 5, myColor); //11
+    // Your drawing code here                                                                 //12
+    CGContextSetRGBFillColor (myContext, 0, 0, 1, 1);
+    CGContextFillRect (myContext, CGRectMake (wd/3-75,ht/2-100,wd/4,ht/4));
+    
+    CGColorRelease (myColor);
+    CGColorSpaceRelease (myColorSpace);
+    CGContextRestoreGState(myContext);
+```
+
+下面是代码详细解释：
+
+1. 接受三个参数来组建矩形框——a graphics context and a widht, height
+2. 申明并创建一个 `CGSize` 对象包含阴影的 offset 值。
+3. 申明一组颜色值。这个例子使用 RGBA， 但是这些值直到它们和一个颜色空间一起传递给 Quartz 时才有意义，这对于 Quartz 正确翻译这些值很有必要。
+4. 给一个颜色引用申明存储
+5. 给一个颜色空间申明存储
+6. 保存当前 graphics state 以便你可以稍后恢复它
+7. 设置一个 shadow 有之前设置的 offset 和一个值为 5 的 blur radius，这意味着一个 soft shadow edge。这个阴影将看上去是灰色的，有一个 {0, 0, 0, 1/3} 的 RGBA 值。
+8. 下面的两行代码绘制 Figure 7-3 右边的矩形框。你可以使用你的代码替换。
+9. 创建一个 RGB 颜色空间。在创建一个 CGColor 对象时你需要提供一个颜色空间。
+10. 创建一个 `CGColor` 对象，提供 device RGB 颜色空间和之前申明的 RGBA 值。这个对象指定了阴影的颜色。
+11. 设置一个 color shadow，提供你刚创建的颜色。阴影使用之前创建的 offset，一个值为 5 的 blur radius。
+12. 下面的两行代码绘制了 Figure 7-3 中的左边的矩形框。你使用你的自定义绘制代码替换这两行。
 
 ----
 # Gradients
