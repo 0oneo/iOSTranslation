@@ -435,7 +435,7 @@ Cocoa 和 Core Foundation 提供了使用 port 相关的函数和对象创建 po
 除了定义事件到来时自定义 input source 的行为外，你也必须定义事件传递的机制。Input source 的这部分跑在单独的线程上，负责给 input source 提供数据，当数据可用的时候发送信号给 input source 来告知它。事件交付机制是由你决定的，但不要太过复杂。
 
 #### Cocoa Perform Selector Sources
-除了基于 port 的 source 外，Cocoa 定义了一个自定义 input source，你可以是用来在任一线程执行一个 selector。跟 port-based input source 相似，执行 selector 的请求在目标线程上是串行的，减去了多个 method 在一个线程上执行时可能发生的同步问题 (请看原文，这里不确定翻译得是否准确，因为一个线程上执行多个方法是没有问题的啊)。跟 port-based source 不同的是，一个 perform selector source 会在它执行了它的 selector 之后从 run loop 中移除自己。
+除了基于 port 的 source 外，Cocoa 定义了一个自定义 input source，你可以是用来在任一线程执行一个 selector。跟 port-based input source 相似，执行 selector 的请求在目标线程上被序列化，缓解了可能发生在一个线程上的多个方法同步竞争问题(序列化了就不用上锁就不会发生同步竞争，用锁的话容易出错，用锁需要大量的学习和练习，推荐事务内存这种新的同步手段，文档前面应该也有提到事务存储，再给大家再加个印象吧，可以维基百科下Transactional memory。)。跟 port-based source 不同的是，一个 perform selector source 会在它执行了它的 selector 之后从 run loop 中移除自己。
 
 > **注意**: 在 OSX v10.5 之前，perform selector source 大部分用在给主线程发送消息，但是在 OS X v10.5 之后和 iOS 中，你可以使用它们给任何线程发送消息。
 
@@ -537,7 +537,8 @@ Timer source 在未来的某个时刻发送同步事件到线程。Timers 是一
     CFRunLoopObserverContext context = {0, self, NULL, NULL, NULL};
     CFRunLoopObserverRef observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopAllActivities, YES, 0, &myRunLoopObserver, &context);
     
-        if (observer)  {
+    
+    if (observer)  {
         CFRunLoopRef    cfLoop = [myRunLoop getCFRunLoop];
         CFRunLoopAddObserver(cfLoop, observer, kCFRunLoopDefaultMode);
     }
@@ -716,7 +717,8 @@ void RunLoopSourceCancelRoutine (void *info, CFRunLoopRef rl, CFStringRef mode) 
 
 ```objc
 - (id)init
-    CFRunLoopSourceContextcontext = {0, self, NULL, NULL, NULL, NULL, NULL,
+    CFRunLoopSourceContext
+context = {0, self, NULL, NULL, NULL, NULL, NULL,
                 &RunLoopSourceScheduleRoutine,
                 RunLoopSourceCancelRoutine,
                 RunLoopSourcePerformRoutine};
@@ -783,7 +785,8 @@ void RunLoopSourceCancelRoutine (void *info, CFRunLoopRef rl, CFStringRef mode) 
 
 ```objc
 NSRunLoop* myRunLoop = [NSRunLoop currentRunLoop];
-// Create and schedule the first timer.
+
+// Create and schedule the first timer.
 NSDate* futureDate = [NSDate dateWithTimeIntervalSinceNow:1.0];
 NSTimer* myTimer = [[NSTimer alloc] initWithFireDate:futureDate interval:0.1 target:self selector:@selector(myDoFireTimer1:) userInfo:nil repeats:YES];  
 [myRunLoop addTimer:myTimer forMode:NSDefaultRunLoopMode];
@@ -1002,7 +1005,8 @@ CFDataRef MainThreadResponseHandler(CFMessagePortRef local, SInt32 msgid, CFData
 主线程配置好后，剩下的唯一需要做的是给新建的线程创建它自己的 port 和 check in。下面的代码展示了 worker 线程的入口函数。函数取出主线程的 port 名称，是用来创建一个创建一个 remote 连接回主线程。然后然后给自己创建一个 local port，安装 port 到线程的 run loop 上，发送 check-in 包含 local port 的消息回主线程。
 
 ```objc
-OSStatus ServerThreadEntryPoint(void* param) {    // Create the remote port to the main thread.
+OSStatus ServerThreadEntryPoint(void* param) {
+    // Create the remote port to the main thread.
     CFMessagePortRef mainThreadPort;
     CFStringRef portName = (CFStringRef)param;
     
@@ -1045,7 +1049,8 @@ OSStatus ServerThreadEntryPoint(void* param) {    // Create the remote port to 
     CFIndex stringLength = CFStringGetLength(myPortName);
     UInt8* buffer = CFAllocatorAllocate(NULL, stringLength, 0);
     
-    CFStringGetBytes(myPortName, CFRangeMake(0,stringLength),    kCFStringEncodingASCII, 0, FALSE, buffer, stringLength, NULL);
+    CFStringGetBytes(myPortName, CFRangeMake(0,stringLength),
+    kCFStringEncodingASCII, 0, FALSE, buffer, stringLength, NULL);
  
     outData = CFDataCreate(NULL, buffer, stringLength);
  
@@ -1152,7 +1157,9 @@ NSLock* arrayLock = GetArrayLock();
 NSMutableArray* myArray = GetSharedArray();
 id anObject;
 
-[arrayLock lock];anObject = [myArray objectAtIndex:0];[arrayLock unlock];
+[arrayLock lock];
+anObject = [myArray objectAtIndex:0];
+[arrayLock unlock];
 
 [anObject doSomething];
 ```
@@ -1162,9 +1169,14 @@ id anObject;
 但上面的例子扔有一个问题。如果你释放了锁，另一个线程进入并删除了数组中所有的对象在调用 `doSomething` 之前，会发生什么了？在一个没有垃圾回收的应用中，你获取的对象可能被释放，使得 `anObject` 指向非法地址。要修复这个问题，你可以简单重新安排锁的位置，在调用 `doSomething` 之后释放锁。
 
 ```objc
-NSLock* arrayLock = GetArrayLock();NSMutableArray* myArray = GetSharedArray();id anObject;
+NSLock* arrayLock = GetArrayLock();
+NSMutableArray* myArray = GetSharedArray();
+id anObject;
 
-[arrayLock lock];anObject = [myArray objectAtIndex:0];[anObject doSomething];[arrayLock unlock];
+[arrayLock lock];
+anObject = [myArray objectAtIndex:0];
+[anObject doSomething];
+[arrayLock unlock];
 ```
 
 通过将 `doSomething` 调用移到锁内，你的代码保证了这个对象在方法调用的过程中是有效的。但不幸的是，如果这儿方法运行的时间过程的话，你的锁会长时间被持有，可能导致一个性能瓶颈。
@@ -1172,10 +1184,16 @@ NSLock* arrayLock = GetArrayLock();NSMutableArray* myArray = GetSharedArray();
 这段代码的问题不是 critical region 被定义得很差，而是真实的问题没有被理解。真实的问题是多线程的出现导致的内存管理的问题。因为它可能被其它线程释放，一个更好的方案是在锁内 retain 获取的对象。这种方案解决了对象被释放的问题，并且这样做不会导致性能问题。
 
 ```objc
-NSLock* arrayLock = GetArrayLock();NSMutableArray* myArray = GetSharedArray();id anObject;
+NSLock* arrayLock = GetArrayLock();
+NSMutableArray* myArray = GetSharedArray();
+id anObject;
   
-[arrayLock lock];anObject = [myArray objectAtIndex:0];[anObject retain];[arrayLock unlock];
-[anObject doSomething];[anObject release];  
+[arrayLock lock];
+anObject = [myArray objectAtIndex:0];
+[anObject retain];
+[arrayLock unlock];
+[anObject doSomething];
+[anObject release];  
 ```
 
 尽管前面的代码本质很简单，但它们很好的说明了一个重要的点。当讨论到正确性的时候，你必须考虑的不仅仅是显而易见的问题。内存管理和你设计的其它部分都可能被多线程的出现而被影响，所以你必须提前考虑这些问题。另外，当考虑到安全你总是应该假设编译器做了最坏的事。这种清楚认知和警觉应该可以帮助你避免潜在的问题，并保证代码行为正确性。
@@ -1214,16 +1232,23 @@ test and clear | OSAtomicTestAndClear<br />OSAtomicTestAndClearBarrier | Tests a
 原子操作的行为大部分都相对直接，并和你期望的相关。下例中，展示了原子操作 test-and-set 和 compare-and-swap 操作，这些相对发杂。最开始的三个 `OSAtomicTestAndSet` 函数调用证明了位操作方程，它们的结果跟你所期望的不大相同。最后的两个调用展示了 `OSAtomicCompareAndSwap32` 的行为。在所有的情况下，这些函数是在未竞争的条件下。
 
 ```objc
-int32_t  theValue = 0;OSAtomicTestAndSet(0, &theValue);
+int32_t  theValue = 0;
+OSAtomicTestAndSet(0, &theValue);
 // theValue is now 128.
   
-theValue = 0;OSAtomicTestAndSet(7, &theValue);// theValue is now 1.
+theValue = 0;
+OSAtomicTestAndSet(7, &theValue);
+// theValue is now 1.
   
-theValue = 0;OSAtomicTestAndSet(15, &theValue)// theValue is now 256.
+theValue = 0;
+OSAtomicTestAndSet(15, &theValue)
+// theValue is now 256.
   
-OSAtomicCompareAndSwap32(256, 512, &theValue);// theValue is now 512.
+OSAtomicCompareAndSwap32(256, 512, &theValue);
+// theValue is now 512.
   
-OSAtomicCompareAndSwap32(256, 1024, &theValue);// theValue is still 512.
+OSAtomicCompareAndSwap32(256, 1024, &theValue);
+// theValue is still 512.
 ```
 
 ## Using Locks
@@ -1240,7 +1265,8 @@ void MyInitFunction() {
 }
 
 void MyLockingFunction() {
-    pthread_mutex_lock(&mutex);    // Do work.
+    pthread_mutex_lock(&mutex);
+    // Do work.
     pthread_mutex_unlock(&mutex);
 }
 ```
@@ -1255,7 +1281,8 @@ void MyLockingFunction() {
 下面的代码展示了怎么使用一个 `NSLock` 对象来协调更新视图，它的数据由多个线程来计算。如果线程不能立即获得锁，它只是简单的继续计算，直到它可以或得这个锁并更新显示。
 
 ```objc
-BOOL moreToDo = YES;NSLock *theLock = [[NSLock alloc] init];
+BOOL moreToDo = YES;
+NSLock *theLock = [[NSLock alloc] init];
 ...
 while (moreToDo) {
     /* Do another increment of calculation */
@@ -1324,7 +1351,8 @@ id condLock = [[NSConditionLock alloc] initWithCondition:NO_DATA];
 
 while(true) {
     [condLock lock];
-    /* Add data to the queue. */    [condLock unlockWithCondition:HAS_DATA];
+    /* Add data to the queue. */
+    [condLock unlockWithCondition:HAS_DATA];
 }
 ```
 
@@ -1377,7 +1405,10 @@ timeToDoWork--;
 下面的代码显式用来给 Cocoa condition 发送信号很递增 predicate 变量的代码。你总是应该在 condition 发送信号之前给它加锁。
 
 ```objc
-[cocoaCondition lock];timeToDoWork++;[cocoaCondition signal];[cocoaCondition unlock];
+[cocoaCondition lock];
+timeToDoWork++;
+[cocoaCondition signal];
+[cocoaCondition unlock];
 ```
 
 ### Using POSIX Conditions
@@ -1386,7 +1417,9 @@ POSIX 线程 condition 锁需要同时使用一个 condition 数据结构和一�
 下面的示例显示了一个 condition 和 predicate 的基本初始化和使用。在初始化好 condition 和 mutex lock。等待线程使用 `ready_to_go` 变量作为它的 predicate 进入一个 while 循环。只有当 predicate 被设置并且 condition 后序被发送信号，等待线程才会被唤醒并开始执行它的工作。
 
 ```objc
-pthread_mutex_t mutex;pthread_cond_t condition;Boolean     ready_to_go = true;
+pthread_mutex_t mutex;
+pthread_cond_t condition;
+Boolean     ready_to_go = true;
 
 void MyCondInitFunction() {
     pthread_mutex_init(&mutex);
@@ -1394,9 +1427,11 @@ void MyCondInitFunction() {
 }
 
 void MyWaitOnConditionFunction() {
-    // Lock the mutex.    pthread_mutex_lock(&mutex);
+    // Lock the mutex.
+    pthread_mutex_lock(&mutex);
     
-    // If the predicate is already set, then the while loop is bypassed;    // otherwise, the thread sleeps until the predicate is set.
+    // If the predicate is already set, then the while loop is bypassed;
+    // otherwise, the thread sleeps until the predicate is set.
     while(ready_to_go == false) {
         pthread_cond_wait(&condition, &mutex);
     }
@@ -1413,9 +1448,12 @@ signaling 线程负责设置 predicate 和发送信号给 condition lock。下�
 
 ```objc
 void SignalThreadUsingCondition() {
-    // At this point, there should be work for the other thread to do.    pthread_mutex_lock(&mutex);    ready_to_go = true;
+    // At this point, there should be work for the other thread to do.
+    pthread_mutex_lock(&mutex);
+    ready_to_go = true;
     
-    // Signal the other thread to begin work.    pthread_cond_signal(&condition);
+    // Signal the other thread to begin work.
+    pthread_cond_signal(&condition);
     
     pthread_mutex_unlock(&mutex);
 }
@@ -1442,20 +1480,51 @@ void SignalThreadUsingCondition() {
 #### Thread-Safe Classes and Functions
 下面的雷和方法通常被认为是线程安全的。你可以在多个线程间使用同一个同一个对象而不需要首先获得一个锁。
 
-<pre>NSArrayNSAssertionHandler 
+<pre>
+NSArray
+NSAssertionHandler 
 NSAttributedString
- NSCalendarDateNSCharacterSetNSConditionLockNSConnectionNSDataNSDateNSDecimal functions 
+ NSCalendarDate
+NSCharacterSet
+NSConditionLock
+NSConnection
+NSData
+NSDate
+NSDecimal functions 
 NSDecimalNumber
 NSDecimal
 NumberHandler
-NSDeserializerNSDictionaryNSDistantObject 
+NSDeserializer
+NSDictionary
+NSDistantObject 
 NSDistributedLock 
 NSDistributedNotificationCenter 
-NSExceptionNSFileManager (in OS X v10.5 and later) 
-NSHostNSLockNSLog/NSLogvNSMethodSignature 
+NSException
+NSFileManager (in OS X v10.5 and later) 
+NSHost
+NSLock
+NSLog/NSLogv
+NSMethodSignature 
 NSNotification 
-NSNotificationCenterNSNumberNSObjectNSPortCoderNSPortMessageNSPortNameServer
-NSProtocolCheckerNSProxyNSRecursiveLockNSSetNSStringNSThreadNSTimerNSTimeZoneNSUserDefaultsNSValueNSXMLParserObject allocation and retain count functions 
+NSNotificationCenter
+NSNumber
+NSObject
+NSPortCoder
+NSPortMessage
+NSPortNameServer
+
+NSProtocolChecker
+NSProxy
+NSRecursiveLock
+NSSet
+NSString
+NSThread
+NSTimer
+NSTimeZone
+NSUserDefaults
+NSValue
+NSXMLParser
+Object allocation and retain count functions 
 Zone and memory functions
 </pre>
 
@@ -1466,7 +1535,8 @@ Zone and memory functions
 NSArchiver 
 NSAutoreleasePool 
 NSBundle 
-NSCalendarNSCoder 
+NSCalendar
+NSCoder 
 NSCountedSet 
 NSDateFormatter 
 NSEnumerator 
@@ -1484,7 +1554,17 @@ NSMutableDictionary
 NSMutableSet 
 NSMutableString 
 NSNotificationQueue 
-NSNumberFormatterNSPipeNSPortNSProcessInfoNSRunLoopNSScannerNSSerializerNSTaskNSUnarchiverNSUndoManagerUser name and home directory functions
+NSNumberFormatter
+NSPipe
+NSPort
+NSProcessInfo
+NSRunLoop
+NSScanner
+NSSerializer
+NSTask
+NSUnarchiver
+NSUndoManager
+User name and home directory functions
 </pre>
 
 注意尽管 `NSSerializer` `NSArchiver` `NSCoder` `NSEnumerator` 对象它们自身是线程安全的，它们被列在这里的原因是在它们被使用的过程中改变它们所包装的数据对象是不安全的。例如，一个 anchiver 的例子，改变正在被 archived 的 object graph 是不安全的。对于一个 enumerator 而言，任意线程修改这个被枚举的集合都是不安全的。
@@ -1509,9 +1589,11 @@ Reentrancy is only possible where operations “call out” to other operations 
 下面的列表列出了 Foundation 框架部分直观可重入的类。其他的类可能或不能重入，或者将来被改得可以重入。一个完成的可重入性分析一直没有进行，所以这个列表可能不够充分：
 
 <pre>
-Distributed ObjectsNSConditionLock 
+Distributed Objects
+NSConditionLock 
 NSDistributedLock 
-NSLockNSLog/NSLogv
+NSLock
+NSLog/NSLogv
  NSNotificationCenter
  NSRecursiveLock NSRunLoop 
  NSUserDefaults
